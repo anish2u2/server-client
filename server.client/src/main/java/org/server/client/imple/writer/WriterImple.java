@@ -1,5 +1,9 @@
 package org.server.client.imple.writer;
 
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.ref.WeakReference;
 import java.util.concurrent.locks.Lock;
@@ -16,13 +20,19 @@ public class WriterImple extends AbstractWriter {
 
 	public void write(byte[] data) {
 		try {
-			if (stream == null || stream.get() == null)
-				stream = new WeakReference<OutputStream>(getSocket().getOutputStream());
-			stream.get().write(data);
+			getSocket().getOutputStream().write(data);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 
+	}
+
+	public void flush() {
+		try {
+			getSocket().getOutputStream().flush();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 	public void lock() throws Exception {
@@ -31,6 +41,43 @@ public class WriterImple extends AbstractWriter {
 
 	public void unlock() throws Exception {
 		this.lock.unlock();
+	}
+
+	@Override
+	public void writeLineFeed() {
+
+		try {
+			if (stream == null || stream.get() == null) {
+				stream = new WeakReference<OutputStream>(getSocket().getOutputStream());
+			}
+			stream.get().write(13);
+			stream.get().write(10);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	public void writeFile(String fileName) {
+		try {
+			DataOutputStream stream = new DataOutputStream(getSocket().getOutputStream());
+			File file = new File(fileName);
+			stream.writeUTF(file.getName());
+			stream.writeLong(file.length());
+			FileInputStream inputStream = new FileInputStream(file);
+			byte[] buffer = new byte[4096];
+			while (inputStream.read(buffer) != -1) {
+				stream.write(buffer);
+			}
+			stream.write(buffer);
+			stream.flush();
+			inputStream.close();
+			if (!getSocket().isClosed())
+				stream.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
 	}
 
 }

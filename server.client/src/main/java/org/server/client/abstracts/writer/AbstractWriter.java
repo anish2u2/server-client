@@ -12,8 +12,6 @@ public abstract class AbstractWriter implements Writer {
 	private WeakReference<Socket> socket;
 	protected WeakReference<OutputStream> stream;
 
-	private boolean isWriteConnectionClosed;
-
 	public void setSocket(Socket socket) {
 		this.socket = new WeakReference<Socket>(socket);
 	}
@@ -22,26 +20,17 @@ public abstract class AbstractWriter implements Writer {
 		return socket.get();
 	}
 
-	public void flush() {
-		try {
-			socket.get().getOutputStream().flush();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
-
 	public void flushAndClose() {
 		flush();
 		try {
 			socket.get().getOutputStream().close();
-			isWriteConnectionClosed = true;
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
 
 	public boolean isClosed() {
-		return isWriteConnectionClosed;
+		return getSocket().isClosed();
 	}
 
 }

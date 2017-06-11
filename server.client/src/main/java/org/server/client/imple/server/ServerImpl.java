@@ -3,13 +3,11 @@ package org.server.client.imple.server;
 import java.net.Socket;
 import java.net.SocketException;
 import java.util.Date;
-import java.util.Map;
 import java.util.PriorityQueue;
 
 import org.server.client.abstracts.server.AbstractServer;
 import org.server.client.contract.Reader;
 import org.server.client.contract.RequestAware;
-import org.server.client.contract.Server;
 import org.server.client.contract.ThreadUtility;
 import org.server.client.contract.Work;
 import org.server.client.contract.Worker;
@@ -32,48 +30,80 @@ public class ServerImpl extends AbstractServer {
 	public Writer getWriter() throws Exception {
 		ThreadUtility threadUtility = ThreadUtilityFactory.getInstance();
 		RequestAware requestAware = threadUtility.get("currentThreadRequest") != null
-				? (RequestAware) threadUtility.get("currentThreadRequest") : PRIORITY_QUEUE.peek();
+				? (RequestAware) threadUtility.get("currentThreadRequest") : PRIORITY_QUEUE.poll();
+		if (threadUtility.get("isRequestAwareObjectFetched") == null)
+			synchronized (PRIORITY_QUEUE) {
+				System.out.println("Waiting for PRIORITY_QUEUE .. ");
+				PRIORITY_QUEUE.wait();
+				System.out.println("PRIORITY_QUEUE has notified..");
+				requestAware = PRIORITY_QUEUE.poll();
+				threadUtility.add("currentThreadRequest", requestAware);
+				threadUtility.add("isRequestAwareObjectFetched", true);
+			}
+		else {
+			requestAware = (RequestAware) threadUtility.get("currentThreadRequest");
+		}
 		if (requestAware == null)
-			synchronized (this) {
-				System.out.println("Started waiting on Server object..");
-				this.wait();
-				System.out.println("Wait is end for the server object.. ..");
-				requestAware = threadUtility.get("currentThreadRequest") != null
-						? (RequestAware) threadUtility.get("currentThreadRequest") : PRIORITY_QUEUE.peek();
-			}
-		if (!requestAware.isNotifyCalled())
-			synchronized (requestAware) {
-				System.out.println("Started waiting on Request Aware Object object..");
-				requestAware.wait();
-				System.out.println("SWait is end  on Request Aware Object ..");
-			}
-		threadUtility.add("currentThreadRequest", requestAware);
-		System.out.println("Added into ThreadUtility ..");
+			requestAware = (RequestAware) threadUtility.get("currentThreadRequest");
+		/*
+		 * if (requestAware == null) synchronized (PRIORITY_QUEUE) {
+		 * System.out.println("Started waiting on Server object..");
+		 * PRIORITY_QUEUE.wait(); System.out.println(
+		 * "Wait is end for the server object.. .."); requestAware =
+		 * threadUtility.get("currentThreadRequest") != null ? (RequestAware)
+		 * threadUtility.get("currentThreadRequest") : PRIORITY_QUEUE.peek(); }
+		 * if (!requestAware.isNotifyCalled()) synchronized (requestAware) {
+		 * System.out.println("Started waiting on Request Aware Object object.."
+		 * ); requestAware.wait(); System.out.println(
+		 * "SWait is end  on Request Aware Object .."); }
+		 */
+		// requestAware.notify();
+		System.out.println("Request found now gsending reader..");
 		return requestAware.getRequestWriter();
 	}
 
 	public Reader getReader() throws Exception {
 		ThreadUtility threadUtility = ThreadUtilityFactory.getInstance();
 		RequestAware requestAware = threadUtility.get("currentThreadRequest") != null
-				? (RequestAware) threadUtility.get("currentThreadRequest") : PRIORITY_QUEUE.peek();
-		if (requestAware == null) {
-			System.out.println("Request aware object is not found int the ThreadUtility..");
-			synchronized (this) {
-				System.out.println("Started waiting on Server object..In reader");
-				this.wait();
-				System.out.println("Wait is end for the server object..In Reader ..");
-				requestAware = threadUtility.get("currentThreadRequest") != null
-						? (RequestAware) threadUtility.get("currentThreadRequest") : PRIORITY_QUEUE.peek();
+				? (RequestAware) threadUtility.get("currentThreadRequest") : PRIORITY_QUEUE.poll();
+		if (threadUtility.get("isRequestAwareObjectFetched") == null)
+			synchronized (PRIORITY_QUEUE) {
+				System.out.println("Waiting for PRIORITY_QUEUE .. while fetching reader");
+				PRIORITY_QUEUE.wait();
+				System.out.println("PRIORITY_QUEUE has notified.. while fetching reader");
+				requestAware = PRIORITY_QUEUE.poll();
+				threadUtility.add("currentThreadRequest", requestAware);
+				threadUtility.add("isRequestAwareObjectFetched", true);
 			}
+		else {
+			requestAware = (RequestAware) threadUtility.get("currentThreadRequest");
 		}
 
-		if (!requestAware.isNotifyCalled())
-			synchronized (requestAware) {
-				System.out.println("Started waiting on Request Aware Object object..reader");
-				requestAware.wait();
-				System.out.println("Wait is end  on Request Aware Object .. reader");
-			}
-		threadUtility.add("currentThreadRequest", requestAware);
+		if (requestAware == null)
+			requestAware = (RequestAware) threadUtility.get("currentThreadRequest");
+		if (requestAware == null)
+			System.out.println("request aware object is null..");
+		else {
+			System.out.println("Object request Aware.." + requestAware);
+		}
+		/*
+		 * if (requestAware == null) { System.out.println(
+		 * "Request aware object is not found int the ThreadUtility..");
+		 * synchronized (this) { System.out.println(
+		 * "Started waiting on Server object..In reader"); this.wait();
+		 * System.out.println("Wait is end for the server object..In Reader .."
+		 * ); requestAware = threadUtility.get("currentThreadRequest") != null ?
+		 * (RequestAware) threadUtility.get("currentThreadRequest") :
+		 * PRIORITY_QUEUE.peek(); } }
+		 * 
+		 * if (!requestAware.isNotifyCalled()) synchronized (requestAware) {
+		 * System.out.println(
+		 * "Started waiting on Request Aware Object object..reader");
+		 * requestAware.wait(); System.out.println(
+		 * "Wait is end  on Request Aware Object .. reader"); }
+		 */
+
+		System.out.println(" Returning back the reader..");
 		return requestAware.getRequestReader();
 	}
 
@@ -130,9 +160,6 @@ public class ServerImpl extends AbstractServer {
 
 	public void serveRequest() {
 		System.out.println("Calling serve request..");
-		final Server server = this;
-		final Map<Object, Object> threadUtilityMap = ThreadUtilityFactory.getInstance().getMap();
-
 		Worker worker = WorkerThread.getWorker();
 		worker.startWorking(new Work() {
 			public void doWork() {
@@ -142,16 +169,19 @@ public class ServerImpl extends AbstractServer {
 						// System.out.println("Serving request.");
 						if (!PRIORITY_QUEUE.isEmpty()) {
 							System.out.println("request queue is not empty..");
-							RequestAware request = PRIORITY_QUEUE.poll();
-							threadUtilityMap.put("currentThreadRequest", request);
-							request.onRequest();
-							request.notifyMe();
-							synchronized (server) {
-								server.notify();
+							/*
+							 * RequestAware request = PRIORITY_QUEUE.poll();
+							 * threadUtilityMap.put("currentThreadRequest",
+							 * request); request.onRequest();
+							 * request.notifyMe();
+							 */
+							PRIORITY_QUEUE.peek().onRequest();
+							synchronized (PRIORITY_QUEUE) {
+								PRIORITY_QUEUE.notifyAll();
 							}
-							synchronized (request) {
-								request.notifyAll();
-							}
+							/*
+							 * synchronized (request) { request.notifyAll(); }
+							 */
 
 							System.out.println("All threads are notified for handling this request..");
 						}

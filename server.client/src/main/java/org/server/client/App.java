@@ -22,8 +22,8 @@ public class App {
 		File logFile = new File("app.log");
 		if (!logFile.exists())
 			logFile.createNewFile();
-		//System.setOut(new PrintStream(logFile));
-		//System.setErr(new PrintStream(logFile));
+		// System.setOut(new PrintStream(logFile));
+		// System.setErr(new PrintStream(logFile));
 		Wifi wifi = WifiFactory.getInstance();
 		final Server server = wifi.getServer();
 		server._init(null, 8987, 0);
@@ -68,7 +68,8 @@ public class App {
 						inputStream.read(buffer);
 						writer.write(buffer);
 						inputStream.close();
-						writer.flushAndClose();
+						if (!writer.isClosed())
+							writer.flushAndClose();
 						ThreadUtilityFactory.getInstance().removeAll();
 						Thread.sleep(300);
 						// }
