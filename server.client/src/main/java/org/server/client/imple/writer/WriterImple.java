@@ -29,7 +29,8 @@ public class WriterImple extends AbstractWriter {
 
 	public void flush() {
 		try {
-			getSocket().getOutputStream().flush();
+			if (!isClosed())
+				getSocket().getOutputStream().flush();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -71,8 +72,6 @@ public class WriterImple extends AbstractWriter {
 			stream.write(buffer);
 			stream.flush();
 			inputStream.close();
-			if (!getSocket().isClosed())
-				stream.close();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

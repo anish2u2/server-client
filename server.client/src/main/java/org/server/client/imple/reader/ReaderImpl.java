@@ -81,18 +81,26 @@ public class ReaderImpl extends AbstractReader {
 	public void readFile(String dirPath) {
 		try {
 			DataInputStream stream = new DataInputStream(getInputStream());
-			String fileName = stream.readUTF();
-			Long fileSize = stream.readLong();
-			System.out.println("File Size:" + fileSize);
-			FileOutputStream outputStream = new FileOutputStream(new File(dirPath + fileName));
-			byte[] buffer = new byte[4096];
-			int content;
-			while ((content = stream.read(buffer)) != -1) {
-				outputStream.write(buffer, 0, content);
+			while (!isClosed()) {
+				String fileName = stream.readUTF();
+				Long fileSize = stream.readLong();
+				System.out.println("File Size:" + fileSize);
+				FileOutputStream outputStream = new FileOutputStream(new File(dirPath + fileName));
+				byte[] buffer = new byte[4096];
+				int content;
+				while ((content = stream.read(buffer)) != -1) {
+					outputStream.write(buffer, 0, content);
+				}
+				try {
+					stream.read();
+				} catch (Exception ex) {
+					ex.printStackTrace();
+				}
+				outputStream.flush();
+				outputStream.close();
+				System.out.println("File success fullly readed.");
+				Thread.sleep(1000);
 			}
-			outputStream.flush();
-			outputStream.close();
-			stream.close();
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}

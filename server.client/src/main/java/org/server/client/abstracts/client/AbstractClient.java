@@ -3,11 +3,15 @@ package org.server.client.abstracts.client;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.net.InetAddress;
+import java.net.NetworkInterface;
 import java.net.Socket;
+import java.util.Enumeration;
+import java.util.List;
 import java.util.logging.Logger;
 
 import org.server.client.abstracts.common.AbstractInitConnection;
 import org.server.client.contract.Client;
+import org.server.client.contract.IpAddressDetail;
 
 public abstract class AbstractClient extends AbstractInitConnection implements Client {
 
@@ -49,4 +53,33 @@ public abstract class AbstractClient extends AbstractInitConnection implements C
 		}
 	}
 
+	public List<IpAddressDetail> getActiveAddress() {
+		try {
+			String siteLocalAddress = null;
+			for (@SuppressWarnings("rawtypes")
+			Enumeration networkInterface = NetworkInterface.getNetworkInterfaces(); networkInterface
+					.hasMoreElements();) {
+				NetworkInterface network = (NetworkInterface) networkInterface.nextElement();
+				for (@SuppressWarnings("rawtypes")
+				Enumeration inetAddress = network.getInetAddresses(); inetAddress.hasMoreElements();) {
+					InetAddress address = (InetAddress) inetAddress.nextElement();
+					System.out.println("---------------------------------");
+					System.out.println("Host address:" + address.getHostAddress());
+					System.out.println("Is loop back address:" + address.isLoopbackAddress());
+					System.out.println("Is Site Local back address:" + address.isSiteLocalAddress());
+					System.out.println("Is Link Local back address:" + address.isLinkLocalAddress());
+					System.out.println("Is Any Local back address:" + address.isAnyLocalAddress());
+					System.out.println("---------------------------------");
+					if (address.isSiteLocalAddress()) {
+						siteLocalAddress = address.getHostAddress();
+						break;
+					}
+				}
+			}
+			return findIpOnThisNetwork(siteLocalAddress);
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
+		return null;
+	}
 }

@@ -23,7 +23,8 @@ public abstract class AbstractWriter implements Writer {
 	public void flushAndClose() {
 		flush();
 		try {
-			socket.get().getOutputStream().close();
+			if (!socket.get().isClosed())
+				socket.get().getOutputStream().close();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
