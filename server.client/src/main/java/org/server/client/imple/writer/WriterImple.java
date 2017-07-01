@@ -9,10 +9,11 @@ import java.lang.ref.WeakReference;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+import org.apache.commons.codec.binary.Base64;
 import org.server.client.abstracts.writer.AbstractWriter;
 
 public class WriterImple extends AbstractWriter {
-	private final Lock lock;
+	private Lock lock;
 
 	public WriterImple() {
 		lock = new ReentrantLock();
@@ -67,16 +68,33 @@ public class WriterImple extends AbstractWriter {
 			FileInputStream inputStream = new FileInputStream(file);
 			byte[] buffer = new byte[4096];
 			while (inputStream.read(buffer) != -1) {
-				stream.write(buffer);
+				stream.writeUTF(Base64.encodeBase64String(buffer));
 			}
-			stream.write(buffer);
+			stream.writeUTF("\n");
 			stream.flush();
 			inputStream.close();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
+	}
+
+	@Override
+	public void writeUTF(String message) {
+		try {
+			DataOutputStream stream = new DataOutputStream(getSocket().getOutputStream());
+			stream.writeUTF(message);
+			stream.flush();
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
+
+	}
+
+	@Override
+	protected void finalize() throws Throwable {
+		super.finalize();
+		lock = null;
 	}
 
 }

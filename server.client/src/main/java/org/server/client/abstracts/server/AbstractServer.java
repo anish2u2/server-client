@@ -13,8 +13,6 @@ import org.server.client.thread.WorkerThread;
 
 public abstract class AbstractServer extends AbstractInitConnection implements Server {
 
-	private final PriorityQueue<Socket> prioritySocketQueue = new PriorityQueue<Socket>();
-
 	private ServerSocket server;
 
 	@Override
@@ -83,5 +81,11 @@ public abstract class AbstractServer extends AbstractInitConnection implements S
 
 	protected void shutDownServer() {
 		shutDownServer();
+	}
+
+	@Override
+	protected void finalize() throws Throwable {
+		super.finalize();
+		server = null;
 	}
 }

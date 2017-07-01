@@ -203,4 +203,10 @@ public class ServerImpl extends AbstractServer {
 		shutDownServer();
 	}
 
+	@Override
+	protected void finalize() throws Throwable {
+		super.finalize();
+		PRIORITY_QUEUE.remove();
+		streamFactory = null;
+	}
 }

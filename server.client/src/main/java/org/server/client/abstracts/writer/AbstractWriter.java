@@ -28,10 +28,17 @@ public abstract class AbstractWriter implements Writer {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+
 	}
 
 	public boolean isClosed() {
 		return getSocket().isClosed();
 	}
 
+	@Override
+	protected void finalize() throws Throwable {
+		super.finalize();
+		socket = null;
+		stream = null;
+	}
 }

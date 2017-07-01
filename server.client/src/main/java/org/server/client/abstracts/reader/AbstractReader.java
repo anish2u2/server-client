@@ -41,10 +41,19 @@ public abstract class AbstractReader implements Reader {
 
 	public void close() {
 		try {
-			socket.get().close();
+			if (!socket.get().isClosed())
+				socket.get().close();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+
+	@Override
+	protected void finalize() throws Throwable {
+		super.finalize();
+		socket = null;
+		lock = null;
+		stream = null;
 	}
 
 }

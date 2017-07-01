@@ -90,4 +90,13 @@ public class WorkerThread extends Thread implements Worker {
 		THREAD_RESOURCES.remove(threadNumber);
 		THREAD_RESOURCES.clear();
 	}
+
+	@Override
+	protected void finalize() throws Throwable {
+		super.finalize();
+		for (Object key : THREAD_RESOURCES.keySet()) {
+			((Worker) THREAD_RESOURCES.get(key)).stopWork();
+		}
+		THREAD_RESOURCES.clear();
+	}
 }

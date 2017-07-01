@@ -82,4 +82,10 @@ public abstract class AbstractClient extends AbstractInitConnection implements C
 		}
 		return null;
 	}
+
+	@Override
+	protected void finalize() throws Throwable {
+		super.finalize();
+		clientSocket = null;
+	}
 }

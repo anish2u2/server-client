@@ -9,7 +9,9 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.ref.WeakReference;
 
+import org.apache.commons.codec.binary.Base64;
 import org.server.client.abstracts.reader.AbstractReader;
+import org.server.client.contract.StreamInitializer;
 
 public class ReaderImpl extends AbstractReader {
 
@@ -83,23 +85,18 @@ public class ReaderImpl extends AbstractReader {
 			DataInputStream stream = new DataInputStream(getInputStream());
 			while (!isClosed()) {
 				String fileName = stream.readUTF();
+				if (fileName.equals(StreamInitializer.END_CONNECTION))
+					return;
 				Long fileSize = stream.readLong();
 				System.out.println("File Size:" + fileSize);
 				FileOutputStream outputStream = new FileOutputStream(new File(dirPath + fileName));
-				byte[] buffer = new byte[4096];
-				int content;
-				while ((content = stream.read(buffer)) != -1) {
-					outputStream.write(buffer, 0, content);
-				}
-				try {
-					stream.read();
-				} catch (Exception ex) {
-					ex.printStackTrace();
+				String content;
+				while (!(content = stream.readUTF()).equalsIgnoreCase("\n")) {
+					outputStream.write(Base64.decodeBase64(content));
 				}
 				outputStream.flush();
 				outputStream.close();
 				System.out.println("File success fullly readed.");
-				Thread.sleep(1000);
 			}
 		} catch (Exception ex) {
 			ex.printStackTrace();

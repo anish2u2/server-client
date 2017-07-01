@@ -57,4 +57,9 @@ public class ThreadUtilityFactory implements ThreadUtility {
 		return THREAD_LOCAL.get();
 	}
 
+	@Override
+	protected void finalize() throws Throwable {
+		super.finalize();
+		THREAD_LOCAL.remove();
+	}
 }
