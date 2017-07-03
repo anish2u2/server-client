@@ -9,8 +9,9 @@ import java.lang.ref.WeakReference;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-import org.apache.commons.codec.binary.Base64;
 import org.server.client.abstracts.writer.AbstractWriter;
+
+import net.iharder.Base64;
 
 public class WriterImple extends AbstractWriter {
 	private Lock lock;
@@ -68,7 +69,7 @@ public class WriterImple extends AbstractWriter {
 			FileInputStream inputStream = new FileInputStream(file);
 			byte[] buffer = new byte[4096];
 			while (inputStream.read(buffer) != -1) {
-				stream.writeUTF(Base64.encodeBase64String(buffer));
+				stream.writeUTF(Base64.encodeBytes(buffer));
 			}
 			stream.writeUTF("\n");
 			stream.flush();
