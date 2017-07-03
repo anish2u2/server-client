@@ -8,6 +8,7 @@ import java.util.PriorityQueue;
 import org.server.client.abstracts.common.AbstractInitConnection;
 import org.server.client.contract.Server;
 import org.server.client.contract.Work;
+import org.server.client.logger.LoggerAPI;
 import org.server.client.thread.ThreadUtilityFactory;
 import org.server.client.thread.WorkerThread;
 
@@ -25,33 +26,33 @@ public abstract class AbstractServer extends AbstractInitConnection implements S
 			} else {
 				server = new ServerSocket(port);
 			}
-			System.out.println(server.getInetAddress().toString());
+			LoggerAPI.logInfo(server.getInetAddress().toString());
 			InetAddress[] addresses = InetAddress.getAllByName(InetAddress.getLocalHost().getHostName());
 			for (InetAddress inet : addresses) {
-				System.out.println("name of server:" + inet.getHostName());
-				System.out.println("Server Ip:" + inet.getHostAddress());
+				LoggerAPI.logInfo("name of server:" + inet.getHostName());
+				LoggerAPI.logInfo("Server Ip:" + inet.getHostAddress());
 			}
 			final ServerSocket serverSocket = server;
 			// final Map<Object, Object> threadLocalMap =
 			// ThreadUtilityFactory.getInstance().getMap();
 			final Server currentServer = this;
 			serveRequest();
-			System.out.println("Now trying to start server.....");
+			LoggerAPI.logInfo("Now trying to start server.....");
 			WorkerThread.getWorker().startWorking(new Work() {
 				public void doWork() {
 					try {
-						System.out.println("Starting work to handle server request..");
+						LoggerAPI.logInfo("Starting work to handle server request..");
 						while (true) {
-							System.out.println("Starting Server.............");
+							LoggerAPI.logInfo("Starting Server.............");
 							Socket socket = serverSocket.accept();
-							System.out.println("Server accepted request..");
+							LoggerAPI.logInfo("Server accepted request..");
 							addRequest(socket);
 							// prioritySocketQueue.add(socket);
 							// threadLocalMap.put("requestSockets",
 							// prioritySocketQueue);
-							System.out.println("Synchronizing on the server object..");
+							LoggerAPI.logInfo("Synchronizing on the server object..");
 							synchronized (currentServer) {
-								System.out.println("Notiying all objects..");
+								LoggerAPI.logInfo("Notiying all objects..");
 								currentServer.notifyAll();
 							}
 
@@ -62,7 +63,7 @@ public abstract class AbstractServer extends AbstractInitConnection implements S
 					}
 				}
 			});
-			System.out.println("server executed..");
+			LoggerAPI.logInfo("server executed..");
 		} catch (
 
 		Exception ex) {

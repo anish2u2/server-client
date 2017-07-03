@@ -8,6 +8,7 @@ import java.util.Map;
 import org.server.client.contract.InitConnection;
 import org.server.client.contract.IpAddressDetail;
 import org.server.client.contract.Work;
+import org.server.client.logger.LoggerAPI;
 import org.server.client.thread.ThreadUtilityFactory;
 import org.server.client.thread.WorkerThread;
 
@@ -77,7 +78,7 @@ public abstract class AbstractInitConnection implements InitConnection {
 			for (int counter = counterInitValue; counter <= counterLimit; counter++) {
 				InetAddress address = InetAddress.getByName((systemIp + new Integer(counter)).toString());
 				if (address.isReachable(100)) {
-					System.out.println("Name:" + address.getHostName() + "Address :" + address.getHostAddress()
+					LoggerAPI.logInfo("Name:" + address.getHostName() + "Address :" + address.getHostAddress()
 							+ " is reachable.");
 					IpAddressDetail ipDetail = new IpAddressDetail() {
 						private String name;

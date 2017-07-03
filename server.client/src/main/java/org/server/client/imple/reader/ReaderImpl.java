@@ -9,9 +9,11 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.ref.WeakReference;
 
-import org.apache.commons.codec.binary.Base64;
 import org.server.client.abstracts.reader.AbstractReader;
 import org.server.client.contract.StreamInitializer;
+import org.server.client.logger.LoggerAPI;
+
+import net.iharder.Base64;
 
 public class ReaderImpl extends AbstractReader {
 
@@ -30,13 +32,13 @@ public class ReaderImpl extends AbstractReader {
 				ByteManipulator byteManipulator = new ByteManipulator();
 				byte[] buffer = new byte[4096];
 				while ((stream.get().read(buffer)) != -1) {
-					System.out.println("buffer:" + new String(buffer));
+					LoggerAPI.logInfo("buffer:" + new String(buffer));
 					byteManipulator.readBytes(buffer);
 				}
 				response = byteManipulator.getByteData();
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
+			LoggerAPI.logError(e);
 		}
 
 		return response;
@@ -88,18 +90,18 @@ public class ReaderImpl extends AbstractReader {
 				if (fileName.equals(StreamInitializer.END_CONNECTION))
 					return;
 				Long fileSize = stream.readLong();
-				System.out.println("File Size:" + fileSize);
-				FileOutputStream outputStream = new FileOutputStream(new File(dirPath + fileName));
+				LoggerAPI.logInfo("File Size:" + fileSize);
+				FileOutputStream outputStream = new FileOutputStream(new File(dirPath, fileName));
 				String content;
 				while (!(content = stream.readUTF()).equalsIgnoreCase("\n")) {
-					outputStream.write(Base64.decodeBase64(content));
+					outputStream.write(Base64.decode(content));
 				}
 				outputStream.flush();
 				outputStream.close();
-				System.out.println("File success fullly readed.");
+				LoggerAPI.logInfo("File success fullly readed.");
 			}
 		} catch (Exception ex) {
-			ex.printStackTrace();
+			LoggerAPI.logError(ex);
 		}
 	}
 }

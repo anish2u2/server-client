@@ -12,6 +12,7 @@ import java.util.logging.Logger;
 import org.server.client.abstracts.common.AbstractInitConnection;
 import org.server.client.contract.Client;
 import org.server.client.contract.IpAddressDetail;
+import org.server.client.logger.LoggerAPI;
 
 public abstract class AbstractClient extends AbstractInitConnection implements Client {
 
@@ -63,13 +64,13 @@ public abstract class AbstractClient extends AbstractInitConnection implements C
 				for (@SuppressWarnings("rawtypes")
 				Enumeration inetAddress = network.getInetAddresses(); inetAddress.hasMoreElements();) {
 					InetAddress address = (InetAddress) inetAddress.nextElement();
-					System.out.println("---------------------------------");
-					System.out.println("Host address:" + address.getHostAddress());
-					System.out.println("Is loop back address:" + address.isLoopbackAddress());
-					System.out.println("Is Site Local back address:" + address.isSiteLocalAddress());
-					System.out.println("Is Link Local back address:" + address.isLinkLocalAddress());
-					System.out.println("Is Any Local back address:" + address.isAnyLocalAddress());
-					System.out.println("---------------------------------");
+					LoggerAPI.logInfo("---------------------------------");
+					LoggerAPI.logInfo("Host address:" + address.getHostAddress());
+					LoggerAPI.logInfo("Is loop back address:" + address.isLoopbackAddress());
+					LoggerAPI.logInfo("Is Site Local back address:" + address.isSiteLocalAddress());
+					LoggerAPI.logInfo("Is Link Local back address:" + address.isLinkLocalAddress());
+					LoggerAPI.logInfo("Is Any Local back address:" + address.isAnyLocalAddress());
+					LoggerAPI.logInfo("---------------------------------");
 					if (address.isSiteLocalAddress()) {
 						siteLocalAddress = address.getHostAddress();
 						break;

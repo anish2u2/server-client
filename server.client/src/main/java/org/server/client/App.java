@@ -10,6 +10,7 @@ import org.server.client.contract.Wifi;
 import org.server.client.contract.Work;
 import org.server.client.contract.Writer;
 import org.server.client.factory.imple.WifiFactory;
+import org.server.client.logger.LoggerAPI;
 import org.server.client.thread.ThreadUtilityFactory;
 import org.server.client.thread.WorkerThread;
 
@@ -33,7 +34,7 @@ public class App {
 			public void doWork() {
 				while (true) {
 					Runtime runtime = Runtime.getRuntime();
-					System.out.println("Total Memory:" + (runtime.totalMemory() / 1000000) + " M.B." + " free Memory:"
+					LoggerAPI.logInfo("Total Memory:" + (runtime.totalMemory() / 1000000) + " M.B." + " free Memory:"
 							+ (runtime.freeMemory() / 1000000) + " M.B. " + " memory consumed by app:"
 							+ ((runtime.totalMemory() - runtime.freeMemory()) / 1000000) + " M.B.");
 					try {
@@ -52,17 +53,17 @@ public class App {
 				@Override
 				public void doWork() {
 					try {
-						System.out.println("Statring work of main Thread..");
+						LoggerAPI.logInfo("Statring work of main Thread..");
 						// while (true) {
 
 						Reader reader = server.getReader();
-						System.out.println("Response from vernetwork client:" + reader.read(RESPONSE_TYPE.STRING));
+						LoggerAPI.logInfo("Response from vernetwork client:" + reader.read(RESPONSE_TYPE.STRING));
 						// writer.write("Hi this server checking multiple
 						// clients....".getBytes());
 						// writer.flushAndClose();
 
 						Writer writer = server.getWriter();
-						System.out.println("Got the writer now waiting ofr the reader..");
+						LoggerAPI.logInfo("Got the writer now waiting ofr the reader..");
 						FileInputStream inputStream = new FileInputStream(new File("D:/cdlsi_mitsubishi_logo.jpg"));
 						byte[] buffer = new byte[(int) new File("D:/cdlsi_mitsubishi_logo.jpg").length()];
 						inputStream.read(buffer);
